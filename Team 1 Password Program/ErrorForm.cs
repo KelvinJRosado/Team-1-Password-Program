@@ -10,11 +10,20 @@ using System.Windows.Forms;
 
 namespace Team_1_Password_Program
 {
-	public partial class Form1 : Form
+	public partial class ErrorForm : Form
 	{
-		public Form1()
+		public static int instantiations = 0;
+
+		public ErrorForm()
 		{
 			InitializeComponent();
+			instantiations++;
 		}
+
+		private void ErrorForm_FormClosed(object sender, FormClosedEventArgs e)
+		{
+			instantiations--;
+		}
+
 	}
 }
