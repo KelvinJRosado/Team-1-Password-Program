@@ -185,11 +185,11 @@ namespace Team_1_Password_Program
 			':', '{', '}', '[', ']', '`', '~', '=', '-'));
 		}
 
-		bool isAuthenticated(String username, String pass, String mac, out String name)
+		public bool isAuthenticated(String username, String pass, String mac, out String name)
 		{
 
 			//Generate query with parameters 
-			String query = "SELECT (Username, MAC_Hash, Active_Pass_Hash, First_Name, Last_Name) FROM Employee "
+			String query = "SELECT Username, MAC_Hash, Active_Pass_Hash, First_Name, Last_Name FROM Employee "
 				+ "WHERE Username = @USER";
 
 			SqlCommand command = new SqlCommand(query, connection);
@@ -219,12 +219,15 @@ namespace Team_1_Password_Program
 					return false;
 				}
 
+				/*
 				//Validate MAC Address
 				if (!PasswordHash.ValidatePassword(mac, result[1]))
 				{
 					return false;
 				}
+				*/
 
+				connection.Close();
 
 				return true;
 			}
@@ -232,6 +235,7 @@ namespace Team_1_Password_Program
 			{
 				Console.WriteLine(e.ToString());
 				name = "";
+				connection.Close();
 				return false;
 			}
 		}

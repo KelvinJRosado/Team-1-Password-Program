@@ -22,6 +22,9 @@ namespace Team_1_Password_Program
 		PasswordHash passHash;
 		DatabaseConnection connection;
 
+		//Person
+		String personName;
+
 		public LoginForm()
 		{
 			InitializeComponent();
@@ -30,12 +33,12 @@ namespace Team_1_Password_Program
 			passHash = new PasswordHash();
 			connection = new DatabaseConnection();
 
-
-			String p1 = "Password*>Q*";
-			String p2 = "PasswordHWi.";
-			String p3 = "PasswordTG#i5";
-			String p4 = "PasswordcH,s";
-			String p5 = "PasswordXqW_";
+			
+			String p1 = "Password!LoS";
+			String p2 = "Passwordo1c^";
+			String p3 = "Password58Bo@";
+			String p4 = "PasswordJb_s";
+			String p5 = "Passwordn.6.";
 
 			p1 = PasswordHash.CreateHash(p1);
 			p2 = PasswordHash.CreateHash(p2);
@@ -48,6 +51,7 @@ namespace Team_1_Password_Program
 			Console.WriteLine(p3);
 			Console.WriteLine(p4);
 			Console.WriteLine(p5);
+			
 
 		}
 
@@ -129,9 +133,8 @@ namespace Team_1_Password_Program
 			if (user == "" || pass == "" || mac == "")
 				return false;
 
+			return connection.isAuthenticated(user, pass, mac, out personName);
 
-
-			return true;
 		}
 
 	}
