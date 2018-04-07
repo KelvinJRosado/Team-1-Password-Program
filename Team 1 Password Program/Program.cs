@@ -111,75 +111,6 @@ namespace Team_1_Password_Program
 
 		}
 
-		/*
-		//Executes a select query and returns a list filled with arrays of columns
-		public List<String[]> SelectQuery(String query)
-		{
-
-			SqlCommand command = new SqlCommand(query, connection);
-
-			try
-			{
-				//Open database connection
-				connection.Open();
-				List<String[]> result = new List<String[]>();
-
-				//Execute the query and populate list with results
-				SqlDataReader reader = command.ExecuteReader();
-				while (reader.Read())
-				{
-					String[] columns = new String[reader.VisibleFieldCount];
-					for (int i = 0; i < reader.VisibleFieldCount; i++)
-					{
-						columns[i] = reader[i].ToString();
-					}
-					result.Add(columns);
-				}
-
-				return result;
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-				return null;
-			}
-		}
-
-		public void InsertUpdateQuery(String query)
-		{
-
-			SqlCommand command = new SqlCommand(query, connection);
-
-			try
-			{
-				connection.Open();
-				command.ExecuteNonQuery();
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-				return;
-			}
-
-		}
-
-		//Prints the result of a query to the console; Debug Only
-		public void PrintQueryResult(List<String[]> result)
-		{
-			foreach (String[] row in result)
-			{
-
-				String ss = "";
-				for (int i = 0; i < row.Length; i++)
-				{
-					ss += row[i] + " |" + "\t";
-				}
-				ss = ss.Substring(0, ss.Length - 1);
-				Console.WriteLine(ss);
-			}
-		}
-		*/
-
 		public static String CleanString(String input)
 		{
 			return String.Join("", input.Split('(', ')', ';', '\'', '"', '/', '\\', ' ', '\n', '\t', '\r',
@@ -257,6 +188,12 @@ namespace Team_1_Password_Program
 				return false;
 			}
 
+			if(newPass.IndexOfAny("'\"\\/(){}[]~`-=;:\r\t\n".ToCharArray()) != -1)
+			{
+				Console.WriteLine("Password cannot contain illegal characters");
+				return false;
+			}
+
 			if (oldPass == newPass)
 			{
 				Console.WriteLine("Password cannot be identical");
@@ -269,11 +206,18 @@ namespace Team_1_Password_Program
 				return false;
 			}
 
-			//Get number of old passwords
-			String query = "SELECT COUNT(Employee_ID) FROM Password_Log WHERE Employee_ID = @ID;";
+			if (are3CharsSame(oldPass, newPass))
+			{
+				Console.WriteLine("Password must change at least 3 characters");
+				return false;
+			}
+
+			//Compare new password to old hashes
+			String query = "SELECT Pass_Hash FROM Password_Log WHERE Employee_ID = @ID;";
 			SqlCommand command = new SqlCommand(query, connection);
 			command.Parameters.Add("@ID", SqlDbType.Int);
 			command.Parameters["@ID"].Value = id;
+			List<String> oldHashes = new List<String>();
 
 			try
 			{
@@ -282,7 +226,8 @@ namespace Team_1_Password_Program
 				SqlDataReader reader = command.ExecuteReader();
 				while (reader.Read())
 				{
-					passID = Int32.Parse(reader[0].ToString()) + 1;
+					String result = reader[0].ToString();
+					oldHashes.Add(result);
 				}
 
 				connection.Close();
@@ -292,14 +237,99 @@ namespace Team_1_Password_Program
 			{
 				connection.Close();
 				Console.WriteLine(e.ToString());
+				return false;
 			}
 
+			//Validate new password against old hashes
+			foreach(String hash in oldHashes)
+			{
+				bool test = PasswordHash.ValidatePassword(newPass, hash);
+				if (test)
+				{
+					Console.WriteLine("Password cannot match a past hash");
+					return false;
+				}
+			}
+
+			//Hash passwords if tests passed
+			String oldHash = PasswordHash.CreateHash(oldPass);
+			String newHash = PasswordHash.CreateHash(newPass);
+			passID = oldHashes.Count() + 1;
+
 			//Insert old pass into database
-			query = "INSERT INTO Password_Log";
+			query = "INSERT INTO Password_Log (Employee_ID, Password_ID, Pass_Hash) VALUES (@EID, @PID, @Pass)";
+			command = new SqlCommand(query, connection);
+			//Give values to parameters
+			command.Parameters.Add("@EID", SqlDbType.Int);
+			command.Parameters.Add("@PID", SqlDbType.Int);
+			command.Parameters.Add("@Pass", SqlDbType.VarChar);
+			command.Parameters["@EID"].Value = id;
+			command.Parameters["@PID"].Value = passID;
+			command.Parameters["@Pass"].Value = oldHash;
+
+			try
+			{
+				connection.Open();
+				command.ExecuteNonQuery();
+				connection.Close();
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine(e.ToString());
+				connection.Close();
+				return false;
+			}
+
+			//Update pass in database
+			query = "UPDATE Employee SET Active_Pass_Hash = @Pass WHERE Employee_ID = @EID;";
+			command = new SqlCommand(query, connection);
+			//Give values to parameters
+			command.Parameters.Add("@EID", SqlDbType.Int);
+			command.Parameters.Add("@Pass", SqlDbType.VarChar);
+			command.Parameters["@EID"].Value = id;
+			command.Parameters["@Pass"].Value = oldHash;
+
+			try
+			{
+				connection.Open();
+				command.ExecuteNonQuery();
+				connection.Close();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+				connection.Close();
+				return false;
+			}
 
 
 			return true;
 		}
+
+		private bool are3CharsSame(String old, String now)
+		{
+			int count = 0;
+
+			if(old.Length <= now.Length)
+			{
+				for (int i = 0; i < old.Length; i++)
+				{
+					if (old[i].Equals(now[i])) count++;//Increment if same character
+				}
+			}
+			else
+			{
+				for(int i = 0; i < now.Length; i++)
+				{
+					if (old[i].Equals(now[i])) count++; //Increment
+				}
+			}
+
+			return (count >= 3);
+			
+
+		}
+
 		
 	}
 	
