@@ -15,9 +15,10 @@ namespace Team_1_Password_Program
 		public static int instantiations = 0;
 		ResetPasswordForm resetForm;
 
-		public WelcomeForm()
+		public WelcomeForm(String name)
 		{
 			InitializeComponent();
+			labelWelcome.Text = "Welcome " + name + "!";
 			instantiations++;
 		}
 

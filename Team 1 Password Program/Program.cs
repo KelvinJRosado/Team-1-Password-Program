@@ -104,6 +104,7 @@ namespace Team_1_Password_Program
 
 		public DatabaseConnection()
 		{
+			//Connection String
 			connection = new SqlConnection("Data Source=on-campus-navigation.caqb3uzoiuo3.us-east-1.rds.amazonaws.com,1433;"
 				+ "user id=Android; password=password;"
 				+ "database=Manufacturing");
@@ -185,11 +186,12 @@ namespace Team_1_Password_Program
 			':', '{', '}', '[', ']', '`', '~', '=', '-'));
 		}
 
-		public bool isAuthenticated(String username, String pass, String mac, out String name)
+		//Attempt to authenticate User; Return result
+		public bool isAuthenticated(String username, String pass, String mac, out String name, out int ID)
 		{
 
 			//Generate query with parameters 
-			String query = "SELECT Username, MAC_Hash, Active_Pass_Hash, First_Name, Last_Name FROM Employee "
+			String query = "SELECT Username, MAC_Hash, Active_Pass_Hash, First_Name, Last_Name, Employee_ID FROM Employee "
 				+ "WHERE Username = @USER";
 
 			SqlCommand command = new SqlCommand(query, connection);
@@ -199,7 +201,7 @@ namespace Team_1_Password_Program
 			//Attempt to execute query
 			try
 			{
-				String[] result = new String[5];//Returned columns
+				String[] result = new String[6];//Returned columns
 				connection.Open();
 
 				SqlDataReader reader = command.ExecuteReader();
@@ -211,11 +213,13 @@ namespace Team_1_Password_Program
 					}
 				}
 
+				ID = Int32.Parse(result[5]);
 				name = result[3] + " " + result[4];
 
 				//Validate password
 				if(!PasswordHash.ValidatePassword(pass, result[2]))
 				{
+					Console.WriteLine("Incorrect Password");
 					return false;
 				}
 
@@ -223,6 +227,7 @@ namespace Team_1_Password_Program
 				//Validate MAC Address
 				if (!PasswordHash.ValidatePassword(mac, result[1]))
 				{
+					Console.WriteLine("Incorrect MAC Address");
 					return false;
 				}
 				*/
@@ -235,9 +240,65 @@ namespace Team_1_Password_Program
 			{
 				Console.WriteLine(e.ToString());
 				name = "";
+				ID = 0;
 				connection.Close();
 				return false;
 			}
+		}
+
+		public bool isPasswordChanged(String oldPass, String newPass, String newPass2, int id)
+		{
+			int passID;
+
+			//Validate new password
+			if (newPass != newPass2)
+			{
+				Console.WriteLine("New passwords do not match");
+				return false;
+			}
+
+			if (oldPass == newPass)
+			{
+				Console.WriteLine("Password cannot be identical");
+				return false;
+			}
+
+			if(oldPass == newPass.Reverse().ToString())
+			{
+				Console.WriteLine("Password cannot be reverse of old password");
+				return false;
+			}
+
+			//Get number of old passwords
+			String query = "SELECT COUNT(Employee_ID) FROM Password_Log WHERE Employee_ID = @ID;";
+			SqlCommand command = new SqlCommand(query, connection);
+			command.Parameters.Add("@ID", SqlDbType.Int);
+			command.Parameters["@ID"].Value = id;
+
+			try
+			{
+				connection.Open();
+
+				SqlDataReader reader = command.ExecuteReader();
+				while (reader.Read())
+				{
+					passID = Int32.Parse(reader[0].ToString()) + 1;
+				}
+
+				connection.Close();
+
+			}
+			catch(Exception e)
+			{
+				connection.Close();
+				Console.WriteLine(e.ToString());
+			}
+
+			//Insert old pass into database
+			query = "INSERT INTO Password_Log";
+
+
+			return true;
 		}
 		
 	}

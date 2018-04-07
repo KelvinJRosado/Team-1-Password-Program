@@ -24,6 +24,8 @@ namespace Team_1_Password_Program
 
 		//Person
 		String personName;
+		public static String account;
+		public static int accountID;
 
 		public LoginForm()
 		{
@@ -32,26 +34,6 @@ namespace Team_1_Password_Program
 			//Initialize 
 			passHash = new PasswordHash();
 			connection = new DatabaseConnection();
-
-			
-			String p1 = "Password!LoS";
-			String p2 = "Passwordo1c^";
-			String p3 = "Password58Bo@";
-			String p4 = "PasswordJb_s";
-			String p5 = "Passwordn.6.";
-
-			p1 = PasswordHash.CreateHash(p1);
-			p2 = PasswordHash.CreateHash(p2);
-			p3 = PasswordHash.CreateHash(p3);
-			p4 = PasswordHash.CreateHash(p4);
-			p5 = PasswordHash.CreateHash(p5);
-
-			Console.WriteLine(p1);
-			Console.WriteLine(p2);
-			Console.WriteLine(p3);
-			Console.WriteLine(p4);
-			Console.WriteLine(p5);
-			
 
 		}
 
@@ -71,7 +53,7 @@ namespace Team_1_Password_Program
 						if(eForm != null) eForm.Close();
 
 						this.Hide();
-						cForm = new WelcomeForm();
+						cForm = new WelcomeForm(personName);
 						cForm.Show();
 					}
 				}
@@ -88,7 +70,7 @@ namespace Team_1_Password_Program
 
 			catch (Exception exp)
 			{
-
+				Console.WriteLine(exp);
 			}
 			
 	}
@@ -128,12 +110,13 @@ namespace Team_1_Password_Program
 			String user = DatabaseConnection.CleanString(LoginText.Text);
 			String pass = DatabaseConnection.CleanString(PassText.Text);
 			String mac = getMacFormatted();
+			account = user;
 
 			//Ensure fields are filled
 			if (user == "" || pass == "" || mac == "")
 				return false;
 
-			return connection.isAuthenticated(user, pass, mac, out personName);
+			return connection.isAuthenticated(user, pass, mac, out personName, out accountID);
 
 		}
 

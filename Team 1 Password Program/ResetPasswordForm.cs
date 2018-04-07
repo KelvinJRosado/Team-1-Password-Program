@@ -13,17 +13,39 @@ namespace Team_1_Password_Program
 	public partial class ResetPasswordForm : Form
 	{
 		public static int instantiations = 0;
+		ErrorForm eForm;
 		PasswordRequirements passwordRequirements;
+		SuccessForm sForm;
+		DatabaseConnection connection;
 
 		public ResetPasswordForm()
 		{
 			InitializeComponent();
 			instantiations++;
+			connection = new DatabaseConnection();
 		}
 
 		private void buttonResetPass_Click(object sender, EventArgs e)
 		{
+			//Clean input
+			String oldPass = DatabaseConnection.CleanString(textBoxCurrentPass.Text);
+			String newPass = DatabaseConnection.CleanString(textBoxNewPass.Text);
+			String verifyPass = DatabaseConnection.CleanString(textBoxVerifyNewPass.Text);
 
+			String username = LoginForm.account;
+			int EID = LoginForm.accountID;
+
+			connection.isPasswordChanged(oldPass, newPass, verifyPass, EID);
+
+			//On success
+			if(SuccessForm.instantiations == 0)
+			{
+				sForm = new SuccessForm();
+				//Close others
+				if (eForm != null) eForm.Close();
+				if (passwordRequirements != null) passwordRequirements.Close();
+				sForm.Show();
+			}
 		}
 
 		private void buttonPassRequirements_Click(object sender, EventArgs e)
