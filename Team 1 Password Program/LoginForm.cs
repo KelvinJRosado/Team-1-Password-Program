@@ -22,10 +22,14 @@ namespace Team_1_Password_Program
 		PasswordHash passHash;
 		DatabaseConnection connection;
 
+		//Check how many login attempts
+		int failedAttempts = 0;
+
 		//Person
 		String personName;
 		public static String account;
 		public static int accountID;
+		String mac;
 
 		public LoginForm()
 		{
@@ -34,6 +38,7 @@ namespace Team_1_Password_Program
 			//Initialize 
 			passHash = new PasswordHash();
 			connection = new DatabaseConnection();
+			mac = getMacFormatted();
 
 		}
 
@@ -59,12 +64,21 @@ namespace Team_1_Password_Program
 				}
 				else
 				{
-					//makes sure there is only one errorform instantiation
-					if (ErrorForm.instantiations == 0)
+					failedAttempts++;
+
+					//Block user after 5 attempts by not getting MAC address
+					if (failedAttempts >= 5) mac = "";
+
+					if(eForm != null)
 					{
-						eForm = new ErrorForm();
-						eForm.Show();
+						eForm.Close();
+						eForm = null;
+
 					}
+
+					eForm = new ErrorForm();
+					eForm.Show();
+
 				}
 			}
 
@@ -109,7 +123,6 @@ namespace Team_1_Password_Program
 			//Get sanitized input
 			String user = DatabaseConnection.CleanString(LoginText.Text);
 			String pass = DatabaseConnection.CleanString(PassText.Text);
-			String mac = getMacFormatted();
 			account = user;
 
 			//Ensure fields are filled

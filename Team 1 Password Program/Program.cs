@@ -144,8 +144,14 @@ namespace Team_1_Password_Program
 					}
 				}
 
-				ID = Int32.Parse(result[5]);
+				connection.Close();
+
 				name = result[3] + " " + result[4];
+				ID = -1;
+
+				if (result[5] == null) return false;
+				ID = Int32.Parse(result[5]);
+				
 
 				//Validate password
 				if(!PasswordHash.ValidatePassword(pass, result[2]))
@@ -154,16 +160,13 @@ namespace Team_1_Password_Program
 					return false;
 				}
 
-				/*
 				//Validate MAC Address
 				if (!PasswordHash.ValidatePassword(mac, result[1]))
 				{
 					Console.WriteLine("Incorrect MAC Address");
 					return false;
 				}
-				*/
-
-				connection.Close();
+				
 
 				return true;
 			}
@@ -185,6 +188,12 @@ namespace Team_1_Password_Program
 			if (newPass != newPass2)
 			{
 				Console.WriteLine("New passwords do not match");
+				return false;
+			}
+
+			if(newPass.Length > 49 || newPass.Length < 10)
+			{
+				Console.WriteLine("Password not within length constraints");
 				return false;
 			}
 

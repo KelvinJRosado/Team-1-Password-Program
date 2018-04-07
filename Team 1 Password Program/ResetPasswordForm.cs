@@ -35,17 +35,28 @@ namespace Team_1_Password_Program
 			String username = LoginForm.account;
 			int EID = LoginForm.accountID;
 
-			connection.isPasswordChanged(oldPass, newPass, verifyPass, EID);
-
-			//On success
-			if(SuccessForm.instantiations == 0)
+			if(connection.isPasswordChanged(oldPass, newPass, verifyPass, EID))
 			{
-				sForm = new SuccessForm();
-				//Close others
-				if (eForm != null) eForm.Close();
-				if (passwordRequirements != null) passwordRequirements.Close();
-				sForm.Show();
+				//On success
+				if (SuccessForm.instantiations == 0)
+				{
+					sForm = new SuccessForm();
+					//Close others
+					if (eForm != null) eForm.Close();
+					if (passwordRequirements != null) passwordRequirements.Close();
+					sForm.Show();
+				}
 			}
+			else
+			{
+				if(ErrorForm.instantiations == 0)
+				{
+					eForm = new ErrorForm();
+					eForm.Show();
+				}
+			}
+
+
 		}
 
 		private void buttonPassRequirements_Click(object sender, EventArgs e)
