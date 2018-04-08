@@ -40,7 +40,7 @@ namespace Team_1_Password_Program
 				//On success
 				if (SuccessForm.instantiations == 0)
 				{
-					sForm = new SuccessForm();
+					sForm = new SuccessForm(this);
 					//Close others
 					if (eForm != null) eForm.Close();
 					if (passwordRequirements != null) passwordRequirements.Close();

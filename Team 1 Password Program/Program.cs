@@ -149,9 +149,13 @@ namespace Team_1_Password_Program
 				name = result[3] + " " + result[4];
 				ID = -1;
 
-				if (result[5] == null) return false;
+				if (result[5] == null)
+				{
+					Console.WriteLine("Account not found");
+					return false;
+				}
+
 				ID = Int32.Parse(result[5]);
-				
 
 				//Validate password
 				if(!PasswordHash.ValidatePassword(pass, result[2]))
@@ -296,7 +300,7 @@ namespace Team_1_Password_Program
 			command.Parameters.Add("@EID", SqlDbType.Int);
 			command.Parameters.Add("@Pass", SqlDbType.VarChar);
 			command.Parameters["@EID"].Value = id;
-			command.Parameters["@Pass"].Value = oldHash;
+			command.Parameters["@Pass"].Value = newHash;
 
 			try
 			{

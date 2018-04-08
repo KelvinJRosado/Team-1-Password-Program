@@ -14,10 +14,11 @@ namespace Team_1_Password_Program
 	{
 		public static int instantiations = 0;
 
-		public SuccessForm()
+		public SuccessForm(ResetPasswordForm form)
 		{
 			InitializeComponent();
 			instantiations++;
+			form.Close();
 		}
 	}
 }
